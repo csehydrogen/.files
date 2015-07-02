@@ -7,7 +7,7 @@ My minimal settings.
 ```
 cd ~
 git clone https://github.com/csehydrogen/.files.git
-.files/bootstrap.sh
+source .files/bootstrap.sh
 ```
 
 This will overwrite your local files, so be careful!
