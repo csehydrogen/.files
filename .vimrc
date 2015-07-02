@@ -49,5 +49,11 @@ filetype plugin indent on
 " solarized setting
 set background=dark
 colorscheme solarized
+
+" toggle paste
+set pastetoggle=<F2>
+" clipboard over ssh
+vmap <F3> :!xclip -f -sel clip<CR>
+map <F4> :r!xclip -o -sel clip<CR>
 " toggle dark/light with F5
 call togglebg#map("<F5>")
