@@ -25,18 +25,14 @@ set title
 set showcmd
 " start scroll 3 lines before border
 set scrolloff=3
-
 " use relative line number
-if exists("&relativenumber")
-    set relativenumber
-    au BufReadPost * set relativenumber
-endif
+set relativenumber
 
 " auto reload .vimrc if changes
-augroup reload_vimrc " {
+augroup reload_vimrc
     autocmd!
     autocmd BufWritePost $MYVIMRC source $MYVIMRC
-augroup END " }
+augroup END
 
 " vundle setting
 source ~/.vim/plugins.vim
