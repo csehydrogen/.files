@@ -1,3 +1,5 @@
+" use UTF-8
+set encoding=utf-8
 " enable syntax highlighting
 syntax on
 " enable line numbers
@@ -41,8 +43,6 @@ set wildmenu
 set backspace=2
 " add g flag to search/replace by default
 set gdefault
-" use UTF-8
-set encoding=utf-8
 " enable binary edit
 set binary
 " centeralize backups, swaps, and undos
