@@ -43,8 +43,8 @@ colorscheme solarized
 
 " toggle paste
 set pastetoggle=<F2>
-" clipboard over ssh
-vmap <F3> :!xclip -f -sel clip<CR>
-map <F4> :r!xclip -o -sel clip<CR>
+" clipboard of x11 over ssh
+vmap <F3> "+y
+map <F4> "+p
 " toggle dark/light with F5
 call togglebg#map("<F5>")
