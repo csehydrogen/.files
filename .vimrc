@@ -8,6 +8,7 @@ colorscheme solarized
 
 " airline setting
 let g:airline#extensions#tabline#enabled=1
+let g:airline#extensions#tabline#fnamemod=':t'
 let g:airline_theme='solarized'
 let g:airline_powerline_fonts=1
 
@@ -25,6 +26,8 @@ augroup jsfolding
   autocmd!
   autocmd FileType javascript setlocal foldenable | setlocal foldmethod=syntax
 augroup END
+" ejs setting
+au BufNewFile,BufRead *.ejs set filetype=html
 
 " use OS clipboard
 set clipboard=unnamed
@@ -34,13 +37,15 @@ set wildmenu
 set backspace=2
 " add g flag to search/replace by default
 set gdefault
+" use UTF-8
+set encoding=utf-8
+" change mapleader
+let mapleader=","
 " centeralize backups, swaps, and undos
 set backupdir=~/.vim/backups
 set directory=~/.vim/swaps
 set undofile
 set undodir=~/.vim/undos
-" use UTF-8
-set encoding=utf-8
 " enable line number
 set number
 " highlight current position
@@ -74,6 +79,8 @@ augroup reload_vimrc
     autocmd!
     autocmd BufWritePost $MYVIMRC source $MYVIMRC
 augroup END
+" buffers become hidden after modification
+set hidden
 
 " toggle paste
 set pastetoggle=<F2>
@@ -82,3 +89,13 @@ vmap <F3> "+y
 map <F4> "+p
 " toggle dark/light with F5
 call togglebg#map("<F5>")
+" new buffer
+nmap <leader>T :enew<CR>
+" next buffer
+nmap <leader>l :bn<CR>
+" prev buffer
+nmap <leader>h :bp<CR>
+" close and move to prev buffer
+nmap <leader>bq :bp <BAR> bd #<CR>
+" show all buffers
+nmap <leader>bl :ls<CR>
