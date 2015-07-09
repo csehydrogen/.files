@@ -30,7 +30,7 @@ augroup END
 au BufNewFile,BufRead *.ejs set filetype=html
 
 " use OS clipboard
-set clipboard=unnamed
+set clipboard=unnamedplus
 " enhance command-line completion
 set wildmenu
 " allow backspace in insert mode
@@ -84,9 +84,6 @@ set hidden
 
 " toggle paste
 set pastetoggle=<F2>
-" clipboard of x11 over ssh
-vmap <F3> "+y
-map <F4> "+p
 " toggle dark/light with F5
 call togglebg#map("<F5>")
 " new buffer
