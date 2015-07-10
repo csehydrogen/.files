@@ -16,10 +16,11 @@ let g:airline_powerline_fonts=1
 set statusline+=%#warningmsg#
 set statusline+=%{SyntasticStatuslineFlag()}
 set statusline+=%*
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
+let g:syntastic_always_populate_loc_list=1
+let g:syntastic_auto_loc_list=1
+let g:syntastic_check_on_open=1
+let g:syntastic_check_on_wq=0
+let g:syntastic_html_tidy_ignore_errors=["proprietary attribute \"ng-"]
 
 " js setting
 augroup jsfolding
@@ -30,7 +31,11 @@ augroup END
 au BufNewFile,BufRead *.ejs set filetype=html
 
 " use OS clipboard
-set clipboard=unnamedplus
+if has('unnamedplus')
+    set clipboard=unnamedplus
+else
+    set clipboard=unnamed
+endif
 " enhance command-line completion
 set wildmenu
 " allow backspace in insert mode
