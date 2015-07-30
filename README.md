@@ -1,12 +1,10 @@
 # .files
 
-My minimal settings.
-
 ## Install
 
 ```
 cd ~
-git clone https://github.com/csehydrogen/.files.git
+git clone --depth=1 https://github.com/csehydrogen/.files.git
 source .files/bootstrap.sh
 ```
 
