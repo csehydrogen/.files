@@ -8,12 +8,42 @@ git clone --depth=1 https://github.com/csehydrogen/.files.git
 source .files/install.sh
 ```
 
-This will overwrite your local files, so be careful!
+This will overwrite local files, so be careful!
 
-## Recommendation
+## Settings
 
-* Solarized-dark themes are used, so use [solarized palette](https://github.com/altercation/solarized) on terminals.
-* For airline, use [powerline patched Inconsolata-dz font](https://github.com/powerline/fonts/tree/master/InconsolataDz).
-* For syntastic, install jshint(for js).
-* To make YCM work, follow [their installation](https://github.com/Valloric/YouCompleteMe#installation).
-* To use copy/paste using X11, use +xterm_clipboard vim like vim-gtk.
+### OS X
+
+* System Preferences
+    * Screen Saver, Energy Saver: Never
+    * Dock: Left, Smallest
+    * Keyboard: fast repeat, short delay, fn, caps lock > Ctrl
+    * Trackpad: All
+    * iCloud > iCloud Drive: uncheck
+    * Sharing: Computer Name
+    * Users & Groups: Guest Off
+    * Long keypress off: defaults write -g ApplePressAndHoldEnabled -bool false
+    * Finder start folder to ~
+    * battery %, detailed time
+* Applications
+    * Chrome, Google Drive, xCode, KakaoTalk, XQuartz
+    * iTerm2
+        * [solarized palette](https://github.com/altercation/solarized)
+        * [powerline patched Inconsolata-dz font](https://github.com/powerline/fonts/tree/master/InconsolataDz)
+    * ShiftIt
+        * fn + ←: Left
+        * fn + →: Right
+        * fn + ↑: Maximize
+        * fn + ↓: Toggle Full Screen
+    * Karabiner
+        * Command_R : 한/영
+* homebrew
+    * vim, tmux
+* cask
+
+### Windows
+
+* System Preferences
+    * lower UAC
+* Applications
+    * Chrome, Google Drive, KakaoTalk, Office
