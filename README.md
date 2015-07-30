@@ -5,7 +5,7 @@
 ```
 cd ~
 git clone --depth=1 https://github.com/csehydrogen/.files.git
-source .files/bootstrap.sh
+source .files/install.sh
 ```
 
 This will overwrite your local files, so be careful!
