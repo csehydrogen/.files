@@ -17,3 +17,6 @@ ln -fs ~/.files/.zshrc ~/.zshrc
 
 # git
 ln -fs ~/.files/.gitconfig ~/.gitconfig
+
+# weechat
+ln -fs ~/.files/.weechat ~/.weechat
