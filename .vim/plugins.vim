@@ -14,7 +14,7 @@ Plugin 'bling/vim-airline'
 " git
 Plugin 'tpope/vim-fugitive'
 " syntax check
-Plugin 'scrooloose/syntastic'
+"Plugin 'scrooloose/syntastic'
 " auto completion
 "Plugin 'Valloric/YouCompleteMe'
 " javascript
