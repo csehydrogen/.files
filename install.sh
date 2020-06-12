@@ -11,12 +11,5 @@ vim -u ~/.vim/plugins.vim +PluginInstall +qa
 # tmux
 ln -fs ~/.files/.tmux.conf ~/.tmux.conf
 
-# zsh
-git clone --depth=1 https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
-ln -fs ~/.files/.zshrc ~/.zshrc
-
 # git
 ln -fs ~/.files/.gitconfig ~/.gitconfig
-
-# weechat
-ln -fs ~/.files/.weechat ~/.weechat
