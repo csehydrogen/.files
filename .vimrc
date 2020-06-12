@@ -48,7 +48,7 @@ set cursorline cursorcolumn
 " 1 tab = 4 spaces
 set tabstop=2 shiftwidth=2 smarttab expandtab
 " auto indent
-set autoindent smartindent
+set autoindent
 " show invisible chars
 set listchars=tab:▸\ ,trail:·,eol:¬,nbsp:_ list
 " search options
@@ -91,3 +91,6 @@ nmap <leader>h :bp<CR>
 nmap <leader>bq :bp <BAR> bd #<CR>
 " show all buffers
 nmap <leader>bl :ls<CR>
+
+" sudo save with :Sw
+command! -nargs=0 Sw w !sudo tee % > /dev/null

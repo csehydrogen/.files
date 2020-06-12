@@ -13,11 +13,6 @@ Plugin 'vim-airline/vim-airline-themes'
 Plugin 'bling/vim-airline'
 " git
 Plugin 'tpope/vim-fugitive'
-" syntax check
-"Plugin 'scrooloose/syntastic'
-" auto completion
-"Plugin 'Valloric/YouCompleteMe'
-" javascript
-"Plugin 'pangloss/vim-javascript'
+Plugin 'vhda/verilog_systemverilog.vim'
 call vundle#end()
 filetype plugin indent on
