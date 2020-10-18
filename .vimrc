@@ -91,10 +91,3 @@ nmap <leader>h :bp<CR>
 nmap <leader>bq :bp <BAR> bd #<CR>
 " show all buffers
 nmap <leader>bl :ls<CR>
-
-" sudo save with :Sw
-command! -nargs=0 Sw w !sudo tee % > /dev/null
-
-" highlight text over column 80
-highlight OverLength ctermbg=red ctermfg=white guibg=#592929
-match OverLength /\%81v.\+/
