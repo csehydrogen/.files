@@ -4,6 +4,8 @@ You are developing on shared Tenstorrent Galaxy servers at Moreh. Devices are a 
 
 ## Device Locking
 
+Only use the lock when you are working with https://github.com/moreh-dev/tt-metal and the hostname is in moreh_lock's hostname to slack channel id map.
+
 You must acquire a `moreh_lock` before any device usage (e.g., calling `ttnn.open_mesh_device`) and release it afterward.
 
 To acquire: create a file named exactly `SECRET` in a temporary directory with this content:
