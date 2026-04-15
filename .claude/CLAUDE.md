@@ -53,11 +53,16 @@ Never wait with tail because it only print result after completion, so it makes 
 
 ## Hang detection and device recovery
 
-If no JIT compilation is running (no `cc1plus` process — only `python`) and there has been no output for more than a minute, assume the device is hung. Run `tt-smi -glx_reset` without releasing the lock, then retry.
+If no JIT compilation is running (no `cc1plus` process — only `python`) and there has been no output for more than a minute, assume the device is hung. Reset the device without releasing the lock, then retry.
 
-Also run `tt-smi -glx_reset` (without releasing the lock) whenever the device appears to be in an invalid state.
+Also reset the device (without releasing the lock) whenever it appears to be in an invalid state.
 
-Always run the reset after acquiring the lock to reset the device state modified by other users.
+Always reset after acquiring the lock to clear state modified by other users.
+
+### Choosing the reset command
+
+- On a Galaxy host (hostname is in `moreh_lock`'s hostname-to-slack-channel map): `tt-smi -glx_reset`.
+- On a non-Galaxy host (e.g. `ttdev14`): `tt-smi -r` with **no** device index. Never pass `-r <index>` on a non-Galaxy host — it can leave the card in a worse state.
 
 ## Profiling with Tracy
 
