@@ -3,3 +3,7 @@
     email = csehydrogen@gmail.com
 [core]
     editor = vim
+[init]
+	defaultBranch = main
+[credential]
+	helper = store
