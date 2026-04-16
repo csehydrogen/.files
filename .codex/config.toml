@@ -1,3 +1,6 @@
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
-model_instructions_file = "/home/heehoon/.codex/AGENTS.md"
+model_instructions_file = "~/.codex/AGENTS.md"
+
+[projects."/remote/vast0/heehoon/tt-latem"]
+trust_level = "trusted"
