@@ -20,7 +20,7 @@ signal.pause()
 
 Run it as a background process: `python SECRET &`. The lock is blocking. Wait for "Lock acquired" in the output before proceeding.
 
-Always set `timeout` to your best estimate of how long you need the device. Never omit it.
+The `timeout` parameter is the **acquire-wait timeout** — how long to wait when another user already holds the lock before giving up. It is **not** an auto-release after holding for that long; once you've acquired the lock, it stays held until you SIGTERM the process. Set `timeout` to how long you're willing to wait in queue (or omit it / set to `None` for unbounded wait). It has nothing to do with how long you'll use the device.
 
 To release: send SIGTERM to the lock process (`kill <pid>`). Never use SIGKILL.
 
