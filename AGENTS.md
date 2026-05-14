@@ -4,44 +4,70 @@ You are developing on shared Tenstorrent Galaxy servers at Moreh. Devices are a 
 
 ## Device Locking
 
-Only use the lock when you are working with https://github.com/moreh-dev/tt-metal and the hostname is in moreh_lock's hostname to slack channel id map.
+Only use the lock when you are working with https://github.com/moreh-dev/tt-metal and the hostname is supported by `moreh_lock`/`moreh-lock` (for example, the Moreh Galaxy hosts configured in `tools/moreh_lock`).
 
 Exception: `vllm-tt-moreh` test scripts acquire and release the device lock internally. When running those test scripts, do not acquire `moreh_lock` manually outside the script.
 
-You must acquire a `moreh_lock` before any device usage (e.g., calling `ttnn.open_mesh_device`) and release it afterward.
+Before running any command that touches Tenstorrent devices (for example, opening a TT device with `ttnn.open_device` / `ttnn.open_mesh_device`, running TT-backed pytest, profiling TT workloads, etc.), check lock status:
 
-To acquire: create a file named exactly `SECRET` in a temporary directory with this content:
-
-```python
-import moreh_lock, signal
-moreh_lock.lock(message=..., timeout=...)
-signal.pause()
+```bash
+moreh-lock status
 ```
 
-Run it as a background process: `python SECRET &`. The lock is blocking. Wait for "Lock acquired" in the output before proceeding.
+Prefer the CLI wrapper for device commands:
 
-The `timeout` parameter is the **acquire-wait timeout** — how long to wait when another user already holds the lock before giving up. It is **not** an auto-release after holding for that long; once you've acquired the lock, it stays held until you SIGTERM the process. Set `timeout` to how long you're willing to wait in queue (or omit it / set to `None` for unbounded wait). It has nothing to do with how long you'll use the device.
-
-To release: send SIGTERM to the lock process (`kill <pid>`). Never use SIGKILL.
-
-If you are interrupted or no longer need the device, always release the lock immediately so others can use it.
-
-If the lock is already acquired, you don't need to acquire it again.
-
-When you are debugging or thinking, always release the lock.
-
-### Lock message format
-
-The `message` parameter must be a Korean string (English technical terms are fine) with this exact structure:
-
-```
-*<summary of previous result> <status slack emoji> <reason for this device usage> <estimate of how long you need the device> :<claude-emoji>:*
+```bash
+moreh-lock run --wait-timeout 3600 --max-hold <seconds> -m "<what you are doing and expected duration>" -- <command> <args>
 ```
 
-- The outer `*...*` makes it bold in Slack markdown. Always include them.
-- Start with a brief summary of the previous device session's result, with a Slack emoji representing the outcome (e.g., `:white_check_mark:`, `:x:`, `:warning:`).
-- Then describe why you need the device this time.
-- End with `by :claude:` or `by :claude-thinking:`, chosen randomly.
+If the command needs shell features, wrap it with `bash -lc`:
+
+```bash
+moreh-lock run --wait-timeout 3600 --max-hold <seconds> -m "<what you are doing and expected duration>" -- bash -lc 'cd path/to/tests && FOO=1 pytest test.py -v 2>&1 | tee run.log'
+```
+
+Use manual hold only when you need an interactive lock window:
+
+```bash
+moreh-lock hold -m "<why you need the device>"
+```
+
+After a locked command exits, verify the lock was released:
+
+```bash
+moreh-lock status
+```
+
+Expected final output:
+
+```text
+Lock is free (... lock files)
+```
+
+Do not run device commands outside `moreh-lock run` unless a higher-level tool already acquires the lock for you. Do not manually kill another user's lock process.
+
+Use `--wait-timeout` for lock acquisition timeout. Use `--max-hold` for command runtime timeout. Always set `--max-hold` to your best estimate of how long you need the device; do not omit it for non-interactive device commands.
+
+If you are debugging or thinking and no command is actively using the device, release the lock immediately so others can use it.
+
+### Do not use the legacy Python API
+
+Do not use the old `moreh_lock.lock()` / `moreh_lock.unlock()` Python API or the previous background `SECRET` script flow. Use `moreh-lock run` for non-interactive device commands and `moreh-lock hold` only for interactive lock windows.
+
+### Docker / container note
+
+Inside Docker, locking only works across processes if the container shares host IPC:
+
+```bash
+--ipc=host
+```
+
+Also set the real host/user via environment variables or CLI flags when needed:
+
+```bash
+export MOREH_LOCK_HOSTNAME=<host>
+export MOREH_LOCK_USERNAME=<user>
+```
 
 ## Building
 
