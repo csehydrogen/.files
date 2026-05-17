@@ -8,34 +8,42 @@ Only use the lock when you are working with https://github.com/moreh-dev/tt-meta
 
 Exception: `vllm-tt-moreh` test scripts acquire and release the device lock internally. When running those test scripts, do not acquire `moreh_lock` manually outside the script.
 
+### Lock command to use
+
+Use the module CLI:
+
+```bash
+python -m moreh_lock
+```
+
 Before running any command that touches Tenstorrent devices (for example, opening a TT device with `ttnn.open_device` / `ttnn.open_mesh_device`, running TT-backed pytest, profiling TT workloads, etc.), check lock status:
 
 ```bash
-moreh-lock status
+python -m moreh_lock status
 ```
 
 Prefer the CLI wrapper for device commands:
 
 ```bash
-moreh-lock run --wait-timeout 3600 --max-hold <seconds> -m "<what you are doing and expected duration>" -- <command> <args>
+python -m moreh_lock run --wait-timeout 3600 --max-hold <seconds> -m "<what you are doing and expected duration>" -- <command> <args>
 ```
 
 If the command needs shell features, wrap it with `bash -lc`:
 
 ```bash
-moreh-lock run --wait-timeout 3600 --max-hold <seconds> -m "<what you are doing and expected duration>" -- bash -lc 'cd path/to/tests && FOO=1 pytest test.py -v 2>&1 | tee run.log'
+python -m moreh_lock run --wait-timeout 3600 --max-hold <seconds> -m "<what you are doing and expected duration>" -- bash -lc 'cd path/to/tests && FOO=1 pytest test.py -v 2>&1 | tee run.log'
 ```
 
 Use manual hold only when you need an interactive lock window:
 
 ```bash
-moreh-lock hold -m "<why you need the device>"
+python -m moreh_lock hold -m "<why you need the device>"
 ```
 
 After a locked command exits, verify the lock was released:
 
 ```bash
-moreh-lock status
+python -m moreh_lock status
 ```
 
 Expected final output:
@@ -44,15 +52,11 @@ Expected final output:
 Lock is free (... lock files)
 ```
 
-Do not run device commands outside `moreh-lock run` unless a higher-level tool already acquires the lock for you. Do not manually kill another user's lock process.
+Do not run device commands outside `python -m moreh_lock run` unless a higher-level tool already acquires the lock for you. Do not manually kill another user's lock process.
 
 Use `--wait-timeout` for lock acquisition timeout. Use `--max-hold` for command runtime timeout. Always set `--max-hold` to your best estimate of how long you need the device; do not omit it for non-interactive device commands.
 
 If you are debugging or thinking and no command is actively using the device, release the lock immediately so others can use it.
-
-### Do not use the legacy Python API
-
-Do not use the old `moreh_lock.lock()` / `moreh_lock.unlock()` Python API or the previous background `SECRET` script flow. Use `moreh-lock run` for non-interactive device commands and `moreh-lock hold` only for interactive lock windows.
 
 ### Docker / container note
 
