@@ -104,6 +104,19 @@ Run: `python -m tracy -r -p -v main.py`. Tracy prints the path to a generated CS
 
 The CSV has these relevant columns: index 0 = OP CODE, 1 = OP TYPE, 2 = GLOBAL CALL COUNT, 3 = DEVICE ID, 18 = DEVICE KERNEL DURATION [ns]. When analyzing, filter to rows where DEVICE ID is `0` or empty, and extract those five columns. Write a parsing script as needed rather than using a fixed one.
 
+## Benchmarking individual ttnn ops
+
+For measuring a single ttnn op's kernel time, prefer the **trace capture/execute** pattern over Tracy. Trace replay amortizes Python and dispatch overhead across many iterations, so wall-clock time over iterations closely approximates pure device kernel time.
+
+Steps:
+
+1. Run the op once to trigger JIT compilation.
+2. Open `ttnn.begin_trace_capture` and run the op a few times inside to capture the trace.
+3. Record start timestamp, execute the trace N times, synchronize, record end timestamp.
+4. Divide elapsed time by total op executions → good approximation of kernel duration with minimal host overhead.
+
+Reserve Tracy for cases where you need per-op breakdowns inside a larger workload.
+
 ## Misc.
 
 - Instead of magic numbers, derive them from existing constants such as ttnn.TILE_SIZE and the ones in tt-metalium/constants.hpp if possible.
