@@ -101,7 +101,7 @@ Always reset after acquiring the lock to clear state modified by other users.
 
 ### Choosing the reset command
 
-- On a Galaxy host (hostname is in `moreh_lock`'s hostname-to-slack-channel map): `tt-smi -glx_reset`.
+- On a Galaxy host (hostname is in `moreh_lock`'s hostname-to-slack-channel map): `moreh-smi -glx_reset`.
 - On a non-Galaxy host (e.g. `ttdev14`): `tt-smi -r` with **no** device index. Never pass `-r <index>` on a non-Galaxy host — it can leave the card in a worse state.
 
 ## Profiling with Tracy
