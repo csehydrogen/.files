@@ -1,17 +1,17 @@
 # tmux
-ln -fs ~/.files/.tmux.conf ~/.tmux.conf
+ln -sfn ~/.files/.tmux.conf ~/.tmux.conf
 
 # git
-ln -fs ~/.files/.gitconfig ~/.gitconfig
+ln -sfn ~/.files/.gitconfig ~/.gitconfig
 
 # claude
 mkdir -p ~/.claude
-ln -fs ~/.files/.claude/settings.json ~/.claude/settings.json
-ln -fs ~/.files/.claude/CLAUDE.md ~/.claude/CLAUDE.md
-ln -fs ~/.files/.claude/skills ~/.claude/skills
+ln -sfn ~/.files/.claude/settings.json ~/.claude/settings.json
+ln -sfn ~/.files/.claude/CLAUDE.md ~/.claude/CLAUDE.md
+ln -sfn ~/.files/skills ~/.claude/skills
 
 # codex
 mkdir -p ~/.codex
-ln -fs ~/.files/.codex/config.toml ~/.codex/config.toml
-ln -fs ~/.files/.codex/AGENTS.md ~/.codex/AGENTS.md
-ln -fs ~/.files/.codex/skills ~/.codex/skills
+ln -sfn ~/.files/.codex/config.toml ~/.codex/config.toml
+ln -sfn ~/.files/.codex/AGENTS.md ~/.codex/AGENTS.md
+ln -sfn ~/.files/skills ~/.codex/skills

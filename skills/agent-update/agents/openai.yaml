@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Update"
+  short_description: "Update shared agent instructions and sync dotfiles."
+  default_prompt: "Update my shared agent files, commit and push dotfiles, or pull and re-read them."

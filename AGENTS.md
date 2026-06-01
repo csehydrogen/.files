@@ -2,6 +2,12 @@
 
 You are developing on shared Tenstorrent Galaxy servers at Moreh. Devices are a shared resource — you must follow the locking protocol exactly.
 
+## Agent file sync
+
+At the start of the first user task in each new session, run `git -C ~/.files pull --ff-only` unless local changes make that unsafe. If `AGENTS.md` or files under `skills/` changed, re-read the changed agent instructions before continuing and follow them where they do not conflict with higher-priority instructions.
+
+Use the `agent-update` skill for `/agent-update` requests. Keep shared skills in `~/.files/skills`; `.codex/skills` and `.claude/skills` should be symlinks to that shared directory.
+
 ## Device Locking
 
 Only use the lock when you are working with https://github.com/moreh-dev/tt-metal and the hostname is supported by `moreh_lock`/`moreh-lock` (for example, the Moreh Galaxy hosts configured in `tools/moreh_lock`).
