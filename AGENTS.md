@@ -2,6 +2,10 @@
 
 You are developing on shared Tenstorrent Galaxy servers at Moreh. Devices are a shared resource — you must follow the locking protocol exactly.
 
+## Instruction priority
+
+Treat this AGENTS.md as repo-local guidance. Explicit user instructions for the current task take precedence over these defaults unless they conflict with system, developer, platform, safety, or other higher-priority instructions. If a requested override cannot be followed because of a higher-priority rule, say so briefly and follow the highest-priority applicable instruction.
+
 ## Agent file sync
 
 At the start of the first user task in each new session, run `git -C ~/.files pull --ff-only` unless local changes make that unsafe. If `AGENTS.md` or files under `skills/` changed, re-read the changed agent instructions before continuing and follow them where they do not conflict with higher-priority instructions.
