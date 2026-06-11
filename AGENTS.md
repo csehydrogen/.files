@@ -38,6 +38,14 @@ Prefer the CLI wrapper for device commands:
 moreh-lock run --wait-timeout 3600 --max-hold <seconds> -m "<what you are doing and expected duration>" -- <command> <args>
 ```
 
+For single-tray Galaxy work, use tray-scoped locking and restrict visibility to the same tray:
+
+```bash
+moreh-lock run --tray <1-4> --wait-timeout 3600 --max-hold <seconds> -m "<tray N work and expected duration>" -- bash -lc 'TT_VISIBLE_DEVICES=$(moreh-smi -glx_tray_env <1-4>) <command> <args>'
+```
+
+A command without `--tray` locks the whole host and conflicts with all tray locks. Tray locks for different trays may run concurrently; tray locks for the same tray conflict. See `tools/moreh_lock/README.md` for current tray-scoped locking semantics.
+
 If the command needs shell features, wrap it with `bash -lc`:
 
 ```bash
@@ -107,7 +115,8 @@ Always reset after acquiring the lock to clear state modified by other users.
 
 ### Choosing the reset command
 
-- On a Galaxy host (hostname is in `moreh-lock`'s hostname-to-slack-channel map): `moreh-smi -glx_reset`.
+- On a Galaxy host (hostname is in `moreh-lock`'s hostname-to-slack-channel map): use `moreh-smi -glx_reset` for a whole-Galaxy reset.
+- For single-tray Galaxy work while holding the matching tray lock, use `moreh-smi -glx_reset_tray <1-4>` and set `TT_VISIBLE_DEVICES=$(moreh-smi -glx_tray_env <1-4>)` for the workload. See `tools/moreh_smi/README.md` for current tray reset behavior and examples.
 - On a non-Galaxy host (e.g. `ttdev14`): `tt-smi -r` with **no** device index. Never pass `-r <index>` on a non-Galaxy host — it can leave the card in a worse state.
 
 ## Profiling with Tracy
