@@ -1,0 +1,4 @@
+interface:
+  display_name: "GH PR Review"
+  short_description: "Review PRs with resolvable comments"
+  default_prompt: "Use $gh-pr-review to review the given PR URL and leave resolvable comments."
