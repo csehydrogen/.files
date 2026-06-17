@@ -12,6 +12,10 @@ At the start of the first user task in each new session, run `git -C ~/.files pu
 
 Use the `agent-update` skill for `/agent-update` requests. Keep shared skills in `~/.files/skills`; `.codex/skills` and `.claude/skills` should be symlinks to that shared directory.
 
+## Git workflow
+
+Never push directly to main branches such as `main`, `master`, `moreh/main`, or `origin/moreh/main`. Always create a feature branch and open a pull request for review. If a user asks to push work and the current branch is a main branch, stop and create/switch to a non-main branch before pushing.
+
 ## Device Locking
 
 Only use the lock when you are working with https://github.com/moreh-dev/tt-metal and the hostname is supported by `moreh-lock` (for example, the Moreh Galaxy hosts configured in `tools/moreh_lock`).
