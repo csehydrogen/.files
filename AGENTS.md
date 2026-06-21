@@ -111,7 +111,9 @@ Never wait with tail because it only print result after completion, so it makes 
 
 These hang-detection rules apply only while running TT device workloads (for example, long-running experiments after opening devices or launching device-backed tests). For ordinary host-side work such as `pip`/`uv` installs, dependency resolution, git operations, or other CPU-only commands, use task-appropriate judgment instead of device-hang recovery rules.
 
-If no JIT compilation is running (no `cc1plus` process — only `python`) and there has been no output for more than a minute during a TT device workload, assume the device is hung. Reset the device without releasing the lock, then retry.
+If no JIT compilation is running (no `cc1plus` process — only `python`) and there has been no output for more than a minute during an already-running TT device workload, assume the device may be hung. This rule does **not** apply while the process is still in device/runtime initialization (for example importing TTNN, opening devices, initializing Fabric, topology discovery, hugepage setup, or first-time test collection that probes devices). During initialization, wait for a clear runtime failure, a command timeout, or explicit evidence that initialization has stopped progressing before treating it as a device hang.
+
+Do not reset underneath a live process that is still initializing or still owns UMD/device mappings. If a reset is needed for a hung TT workload, keep the lock held, stop or let the workload process exit (or run triage from the same lock context when appropriate), then reset and retry.
 
 Also reset the device (without releasing the lock) whenever it appears to be in an invalid state during TT device usage.
 
