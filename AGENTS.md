@@ -99,7 +99,7 @@ export MOREH_LOCK_USERNAME=<user>
 
 ## Building
 
-Run `./build_metal.sh` to compile tt-metal. Never use cmake directly. Kernel (device-side) changes are picked up by JIT compilation automatically — you only need to recompile when host code changes.
+Run `./build_metal.sh` to compile tt-metal. Never use cmake directly. After changing tt-metal source code, always run `./build_metal.sh -ce` before running tests or device workloads; do not rely on judging whether JIT compilation is sufficient.
 
 ## Long-running experiments
 
