@@ -16,6 +16,8 @@ Use the `agent-update` skill for `/agent-update` requests. Keep shared skills in
 
 Never push directly to main branches such as `main`, `master`, `moreh/main`, or `origin/moreh/main`. Always create a feature branch and open a pull request for review. If a user asks to push work and the current branch is a main branch, stop and create/switch to a non-main branch before pushing.
 
+When creating a feature branch, use the `heehoon/` prefix by default unless the user explicitly requests a different branch name.
+
 ## Device Locking
 
 Only use the lock when you are working with https://github.com/moreh-dev/tt-metal and the hostname is supported by `moreh-lock` (for example, the Moreh Galaxy hosts configured in `tools/moreh_lock`).
