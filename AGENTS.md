@@ -101,7 +101,7 @@ export MOREH_LOCK_USERNAME=<user>
 
 ## Building
 
-Run `./build_metal.sh` to compile tt-metal. Never use cmake directly. Kernel (device-side) changes are picked up by JIT compilation automatically — you only need to recompile when host code changes.
+Run `./build_metal.sh` to compile tt-metal. Never use cmake directly. After changing tt-metal source code, always run `./build_metal.sh -ce` before running tests or device workloads; do not rely on judging whether JIT compilation is sufficient.
 
 ## Heehoon's tt-metal Kernel Guide
 
@@ -187,7 +187,9 @@ Never wait with tail because it only print result after completion, so it makes 
 
 These hang-detection rules apply only while running TT device workloads (for example, long-running experiments after opening devices or launching device-backed tests). For ordinary host-side work such as `pip`/`uv` installs, dependency resolution, git operations, or other CPU-only commands, use task-appropriate judgment instead of device-hang recovery rules.
 
-If no JIT compilation is running (no `cc1plus` process — only `python`) and there has been no output for more than a minute during a TT device workload, assume the device is hung. Reset the device without releasing the lock, then retry.
+If no JIT compilation is running (no `cc1plus` process — only `python`) and there has been no output for more than a minute during an already-running TT device workload, assume the device may be hung. This rule does **not** apply while the process is still in device/runtime initialization (for example importing TTNN, opening devices, initializing Fabric, topology discovery, hugepage setup, or first-time test collection that probes devices). During initialization, wait for a clear runtime failure, a command timeout, or explicit evidence that initialization has stopped progressing before treating it as a device hang.
+
+Do not reset underneath a live process that is still initializing or still owns UMD/device mappings. If a reset is needed for a hung TT workload, keep the lock held, stop or let the workload process exit (or run triage from the same lock context when appropriate), then reset and retry.
 
 Also reset the device (without releasing the lock) whenever it appears to be in an invalid state during TT device usage.
 
@@ -224,6 +226,9 @@ Reserve Tracy for cases where you need per-op breakdowns inside a larger workloa
 
 - In TT dataflow kernels, avoid tiny unaligned NOC reads/writes for scalar fields in interleaved tensors or L1 buffers. Read/write an aligned 32-byte (or larger aligned) chunk into scratch, then index the scalar locally. For example, reading one int32 from `TensorAccessor::get_noc_addr(page, elem * sizeof(int32_t))` or an `InterleavedAddrGen` with a 4-byte size can silently fetch the wrong value on device; align the offset down and transfer at least 32 bytes.
 - In TT ops, allocate internal L1 scratch/persistent workspace as circular buffers (`CircularBufferConfig` + `CreateCircularBuffer`) and pass/access them by CB index with `get_read_ptr`/`get_write_ptr`; do not allocate scratch L1 with `CreateBuffer(BufferType::L1)` unless you are intentionally creating a real tensor-like/runtime buffer and have verified the pattern in nearby ops. For manually managed L1 storage that is not a tensor, do raw address math from the CB base and explicit NOC coordinates; do not use `TensorAccessor`/`InterleavedAddrGen` on non-tensor scratch, because page/bank mapping can return garbage.
+- In TT Fabric dataflow kernels, allocate packet-header CBs with exact fabric header page size `tt::tt_fabric::get_tt_fabric_packet_header_size_bytes()` (96 bytes on the current 2D torus route-buffer-size-35 path) and enough pages for every simultaneously live header. One page is sufficient when a core uses only one header/route at a time, such as a lane choosing either north or south; allocate multiple pages only when the same core keeps multiple headers live concurrently. `RawUInt32` matches common fabric examples, but `UInt32` also works when the page size is exact; do not infer a fabric hang is caused by dtype before isolating semaphore scope and header page/slot sizing.
+- For TT Fabric barriers or fabric atomics that use global semaphores, create/pass the semaphore on every core that will read or increment it, including fabric/link-worker cores. Do not create a global semaphore only on logical `(0,0)` when the barrier runs on a separate fabric core row/column. For local semaphores from `CreateSemaphore`, use a `CoreRangeSet` that includes all participating cores.
+- In TT dataflow kernels, when using NOC writes followed by a semaphore signal (unicast or multicast), issue the data writes first, then issue the semaphore increment/set, then run one `noc_async_write_barrier()`. Do not put `noc_async_write_barrier()` or `noc_async_atomic_barrier()` between the data write and semaphore signal; the intended ordering is `noc_async_write*`/`noc_async_write_multicast*` -> `noc_semaphore_inc`/`noc_semaphore_set_multicast` -> `noc_async_write_barrier()`.
 - In TT compute kernels, initialize and reconfigure explicitly before every operation family. Put one whole-kernel init near the start (usually `compute_kernel_hw_startup(...)` plus `unary_op_init_common(...)`). Before `copy_tile`, reconfigure SrcA for the input CB and run the copy init (for example `reconfig_data_format_srca(...)`/`reconfig_data_format(...)` then `copy_tile_to_dst_init_short...`). Before `pack_tile`, call `pack_reconfig_data_format(...)` for the destination CB. Before `tilize_block`/`untilize_block`, run the matching `tilize_init...`/`untilize_init...` with the correct data formats and packer config; do not assume a previous op left unpack/math/pack state valid.
 - Instead of magic numbers, derive them from existing constants such as ttnn.TILE_SIZE and the ones in tt-metalium/constants.hpp if possible.
 - When making a git commit, never co-author.
