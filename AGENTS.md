@@ -103,6 +103,80 @@ export MOREH_LOCK_USERNAME=<user>
 
 Run `./build_metal.sh` to compile tt-metal. Never use cmake directly. Kernel (device-side) changes are picked up by JIT compilation automatically — you only need to recompile when host code changes.
 
+## Heehoon's tt-metal Kernel Guide
+
+These rules are intentionally stricter than necessary to reduce mistakes by AI agents.
+
+### General kernel rules
+
+- Never use `invalidate_l1_cache()`.
+- Never use `noc_async_atomic_barrier()`.
+- Align every NoC transaction to 32 bytes:
+  - `src_addr % 32 == dst_addr % 32`
+  - `size % 32 == 0`
+- Semaphores are automatically initialized to their configured initial value at the start of the kernel. Do not set them again explicitly; doing so can create races, for example when another core has already sent an increment that then gets overwritten by a set.
+- Calling `get_semaphore(id)` for a semaphore that is not allocated on the current core (only on other cores) is wrong.
+- Be careful when accessing another core's circular buffer over NoC, especially when that CB is not allocated on the current core. TODO: clarify the correct way to obtain a remote core's CB address.
+- For `NocUnicastAtomicIncFusedCommandHeader`, setting `flush = true` ensures receiver-side EDM acknowledgement of the write data, so the atomic increment is sent only after the data has arrived at the destination.
+- `transpose_wh_dest` is face-wise transpose by default.
+- With `matmul_block`, even when `transpose = true`, the B segment (`ct_dim * kt_dim`) is expected to occupy continuous CB slots; the A segment may use `kt_dim` stride.
+- `pack_tile` and `pack_tile_block` auto-advance the output tile index by default.
+  - For an arbitrary `output_tile_index`, pass `out_of_order_output = true` to `pack_tile`.
+- Choose argument types as follows:
+  - If values differ across cores, use runtime args.
+  - If values are common across cores but can differ run-to-run (for example, tensor addresses), use common runtime args.
+  - Otherwise, use compile-time args.
+- Do not use a custom `compute_program_hash`. If possible, do not define one; rely on the default hash.
+
+### Multicast
+
+For multicast, use this pattern:
+
+```cpp
+noc_async_write_multicast(...);
+noc_semaphore_set_multicast(...);
+noc_async_write_barrier();
+```
+
+The write operations are ordered, so do not put a barrier between the data write and the semaphore write.
+
+TODO: document virtual coordinates, physical coordinates, and the `noc0`/`noc1` reversal rules.
+
+### Unit tests
+
+When adding an op, implement these tests:
+
+- `op_correctness`
+- `op_performance`: use trace-replay-based measurement, not Tracy.
+- `op_breakdown`: include an interleaved L1 debug tensor shaped like `[num_cores, num_slots]`; write values as `debug_l1[slot] = x`. Keep this simple; do not use a fancy `TensorAccessor` here.
+
+### Circular buffers
+
+- Never call `cb_push_back` or `cb_pop_front` from multiple threads. CB write/read pointers are not synchronized across threads (see the comment in `cb_api.h`).
+
+### Accessing tensors
+
+- Almost always use `TensorAccessor`.
+
+### Compute kernels
+
+- Never use `acquire_dst` or `release_dst`.
+- Use `tile_regs_acquire`, `tile_regs_commit`, `tile_regs_wait`, and `tile_regs_release`.
+- For FPU ops, always precede the operation with reconfiguration and init, for example:
+
+```cpp
+reconfig_data_format(cb_m_local, cb_m_local);
+copy_tile_to_dst_init_short(cb_m_local);
+copy_tile(cb_m_local, 0, 0);
+```
+
+- For SFPU ops, always precede the operation with init, for example:
+
+```cpp
+exp_tile_init</*approx=*/false, scale_fp32>();
+exp_tile</*approx=*/false, /*scale_en=*/true>(0, static_cast<int>(VectorMode::RC), scale_bf16);
+```
+
 ## Long-running experiments
 
 When running long experiments, print process output intermittently so the user can distinguish progress from a hang.
@@ -121,9 +195,11 @@ Always reset after acquiring the lock to clear state modified by other users.
 
 ### Choosing the reset command
 
+Always use `moreh-smi` for reset commands. Never use `tt-smi`.
+
 - On a Galaxy host (hostname is in `moreh-lock`'s hostname-to-slack-channel map): use `moreh-smi -glx_reset` for a whole-Galaxy reset.
 - For single-tray Galaxy work while holding the matching tray lock, use `moreh-smi -glx_reset_tray <1-4>` and set `TT_VISIBLE_DEVICES=$(moreh-smi -glx_tray_env <1-4>)` for the workload. See `tools/moreh_smi/README.md` for current tray reset behavior and examples.
-- On a non-Galaxy host (e.g. `ttdev14`): `tt-smi -r` with **no** device index. Never pass `-r <index>` on a non-Galaxy host — it can leave the card in a worse state.
+- On a non-Galaxy host (e.g. `ttdev14`): use `moreh-smi -r` with **no** device index. Never pass `-r <index>` on a non-Galaxy host — it can leave the card in a worse state.
 
 ## Profiling with Tracy
 
