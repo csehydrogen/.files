@@ -16,6 +16,8 @@ Use the `agent-update` skill for `/agent-update` requests. Keep shared skills in
 
 Never push directly to main branches such as `main`, `master`, `moreh/main`, or `origin/moreh/main`. Always create a feature branch and open a pull request for review. If a user asks to push work and the current branch is a main branch, stop and create/switch to a non-main branch before pushing.
 
+Exception: for agent-instruction updates in the `~/.files` dotfiles repo, commit and push directly to `master`. Do not create a branch or pull request for `~/.files` agent updates.
+
 When creating a feature branch, use the `heehoon/` prefix by default unless the user explicitly requests a different branch name.
 
 ## Device Locking
