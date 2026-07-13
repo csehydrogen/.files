@@ -121,9 +121,10 @@ Always reset after acquiring the lock to clear state modified by other users.
 
 ### Choosing the reset command
 
+- Always use `moreh-smi` for device resets. Never use `tt-smi` to reset devices.
 - On a Galaxy host (hostname is in `moreh-lock`'s hostname-to-slack-channel map): use `moreh-smi -glx_reset` for a whole-Galaxy reset.
 - For single-tray Galaxy work while holding the matching tray lock, use `moreh-smi -glx_reset_tray <1-4>` and set `TT_VISIBLE_DEVICES=$(moreh-smi -glx_tray_env <1-4>)` for the workload. See `tools/moreh_smi/README.md` for current tray reset behavior and examples.
-- On a non-Galaxy host (e.g. `ttdev14`): `tt-smi -r` with **no** device index. Never pass `-r <index>` on a non-Galaxy host — it can leave the card in a worse state.
+- On a non-Galaxy host (e.g. `ttdev14`): use `moreh-smi -r` with **no** device index. Never pass `-r <index>` — it can leave the card in a worse state.
 
 ## Profiling with Tracy
 
