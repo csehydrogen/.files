@@ -155,6 +155,7 @@ When adding an op, implement these tests:
 ### Circular buffers
 
 - Never call `cb_push_back` or `cb_pop_front` from multiple threads. CB write/read pointers are not synchronized across threads (see the comment in `cb_api.h`).
+- A single `cb_reserve_back`, `cb_push_back`, `cb_wait_front`, or `cb_pop_front` call must not cross the physical CB boundary. Limit each call to the contiguous pages remaining before the wrap point, let the pointer reach the boundary and wrap, then issue another call for any remaining pages. For example, at offset 2 in a 3-page CB, call with 1, not 2.
 
 ### Accessing tensors
 
