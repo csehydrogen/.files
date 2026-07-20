@@ -30,7 +30,7 @@ Only use the lock when you are working with https://github.com/moreh-dev/tt-meta
 
 Exception: `vllm-tt-moreh` test scripts acquire and release the device lock internally. When running those test scripts, do not acquire `moreh-lock` manually outside the script.
 
-Never lock, reset, or run a TT workload at Galaxy tray scope. Do not use `moreh-lock run --tray`, `moreh-smi -glx_reset_tray`, or `moreh-smi -glx_tray_env`, and do not restrict `TT_VISIBLE_DEVICES` to a tray. On Galaxy hosts, use a whole-host lock and a whole-Galaxy reset, with device visibility not scoped by tray.
+Never use a tray-scoped device lock or tray-scoped device reset, and never run a TT workload scoped to one tray. Do not use `moreh-lock run --tray`, `moreh-smi -glx_reset_tray`, or `moreh-smi -glx_tray_env`, and do not restrict `TT_VISIBLE_DEVICES` to a tray. On Galaxy hosts, use a whole-host lock and a whole-Galaxy reset, with device visibility not scoped by tray.
 
 ### Lock command to use
 
