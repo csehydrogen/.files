@@ -101,7 +101,7 @@ export MOREH_LOCK_USERNAME=<user>
 
 ## Building
 
-Run `./build_metal.sh` to compile tt-metal. Never use cmake directly. After changing tt-metal source code, always run `./build_metal.sh -ce` before running tests or device workloads; do not rely on judging whether JIT compilation is sufficient.
+Always use `./build_metal.sh -ce` to compile tt-metal. Never use cmake directly, and never use a unity build. After changing tt-metal source code, complete this build before running tests or device workloads; do not rely on judging whether JIT compilation is sufficient.
 
 ## Heehoon's tt-metal Kernel Guide
 
