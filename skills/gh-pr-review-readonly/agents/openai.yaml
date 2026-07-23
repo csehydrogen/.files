@@ -1,0 +1,4 @@
+interface:
+  display_name: "GH PR Review (Read Only)"
+  short_description: "Review PRs without posting comments"
+  default_prompt: "Use $gh-pr-review-readonly to review the given PR URL and report findings without posting comments."
