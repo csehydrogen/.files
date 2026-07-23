@@ -127,8 +127,8 @@ These rules are intentionally stricter than necessary to reduce mistakes by AI a
 - Any kernel that issues asynchronous NoC atomics, including semaphore increments, must call `noc_async_atomic_barrier()` after those operations and before the kernel ends.
 - Any kernel that issues asynchronous NoC writes must call `noc_async_write_barrier()` after those operations and before the kernel ends.
 - Align every NoC transaction to 32 bytes:
-  - `src_addr % 32 == dst_addr % 32`
-  - `size % 32 == 0`
+  - `src_addr % 32 == dst_addr % 32` is a hard requirement.
+  - `size % 32 == 0` is a strong default, not a hard requirement; some operations intentionally use transaction sizes that are not divisible by 32.
 - Semaphores are automatically initialized to their configured initial value at the start of the kernel. Do not set them again explicitly; doing so can create races, for example when another core has already sent an increment that then gets overwritten by a set.
 - Calling `get_semaphore(id)` for a semaphore that is not allocated on the current core (only on other cores) is wrong.
 - Be careful when accessing another core's circular buffer over NoC, especially when that CB is not allocated on the current core. TODO: clarify the correct way to obtain a remote core's CB address.
