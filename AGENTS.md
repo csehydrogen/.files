@@ -211,6 +211,8 @@ Also reset the device (without releasing the lock) whenever it appears to be in 
 
 Always reset after acquiring the lock to clear state modified by other users.
 
+On a four-Galaxy cluster, prefer resetting all four Galaxy systems before the workload, even when launching a job that uses only two Galaxies. Perform each reset only while holding the corresponding whole-host lock.
+
 ### Choosing the reset command
 
 Always use `moreh-smi` for reset commands. Never use `tt-smi`.
