@@ -10,6 +10,10 @@ Treat this AGENTS.md as repo-local guidance. Explicit user instructions for the 
 
 Never use Korean unless the user explicitly requests it.
 
+## External services
+
+When interacting with services such as Slack, GitHub, and similar platforms, prefer command-line tools, direct APIs, or another programmatic approach over installing or requesting a plugin. Use a plugin only when those approaches are unavailable or clearly inadequate.
+
 ## Agent file sync
 
 At the start of the first user task in each new session, run `git -C ~/.files pull --ff-only` unless local changes make that unsafe. If `AGENTS.md` or files under `skills/` changed, re-read the changed agent instructions before continuing and follow them where they do not conflict with higher-priority instructions.
