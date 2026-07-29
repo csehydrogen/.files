@@ -18,6 +18,10 @@ When interacting with services such as Slack, GitHub, and similar platforms, pre
 
 Unless the user explicitly requests remote execution, run builds, tests, benchmarks, experiments, and other jobs on the host and cluster where the session is already running. Do not use SSH or another remote connection to move a job elsewhere. For example, from `ttdev31`, run the job on `ttdev31`, not `ttdev32`; from AI cluster 1, stay on AI cluster 1 rather than using AI cluster 2.
 
+## Unexpected errors
+
+Never silently omit an unexpected error. In the next response to the user, briefly report what failed, its impact, and whether or how it was recovered.
+
 ## Agent file sync
 
 At the start of the first user task in each new session, run `git -C ~/.files pull --ff-only` unless local changes make that unsafe. If `AGENTS.md` or files under `skills/` changed, re-read the changed agent instructions before continuing and follow them where they do not conflict with higher-priority instructions.
