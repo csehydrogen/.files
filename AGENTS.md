@@ -248,6 +248,10 @@ Steps:
 
 Reserve Tracy for cases where you need per-op breakdowns inside a larger workload.
 
+## EvalScope metrics
+
+Never use, report, compare, or draw conclusions from EvalScope's `Spec. Accept Rate`. It is an approximation inferred from streaming behavior, not the model runtime's real speculative-token acceptance rate. Use only acceptance metrics measured directly by the model or runtime.
+
 ## Misc.
 
 - In TT dataflow kernels, avoid tiny unaligned NOC reads/writes for scalar fields in interleaved tensors or L1 buffers. Read/write an aligned 32-byte (or larger aligned) chunk into scratch, then index the scalar locally. For example, reading one int32 from `TensorAccessor::get_noc_addr(page, elem * sizeof(int32_t))` or an `InterleavedAddrGen` with a 4-byte size can silently fetch the wrong value on device; align the offset down and transfer at least 32 bytes.
