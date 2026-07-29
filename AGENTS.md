@@ -167,11 +167,12 @@ TODO: document virtual coordinates, physical coordinates, and the `noc0`/`noc1` 
 
 ### Unit tests
 
-When adding an op, implement these tests:
+When adding an op, implement these tests by default:
 
 - `op_correctness`
 - `op_performance`: use trace-replay-based measurement, not Tracy.
-- `op_breakdown`: include an interleaved L1 debug tensor shaped like `[num_cores, num_slots]`; write values as `debug_l1[slot] = x`. Keep this simple; do not use a fancy `TensorAccessor` here.
+
+The `op_breakdown` test and its L1 debug tensor interface are optional; implement them only when explicitly instructed. When requested, include an interleaved L1 debug tensor shaped like `[num_cores, num_slots]`; write values as `debug_l1[slot] = x`. Keep this simple; do not use a fancy `TensorAccessor` here.
 
 ### Circular buffers
 
