@@ -1,0 +1,4 @@
+interface:
+  display_name: "GH Review Own PR"
+  short_description: "Submit my PR and address parallel AI reviews"
+  default_prompt: "Use $gh-review-own-pr to submit my current changes, collect parallel Copilot, Codex, and Claude reviews, and prepare an approval-gated fix plan."

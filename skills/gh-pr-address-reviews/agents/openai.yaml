@@ -1,4 +1,0 @@
-interface:
-  display_name: "GH PR Address Reviews"
-  short_description: "Plan and address PR review comments"
-  default_prompt: "Use $gh-pr-address-reviews to inspect reviews on the given PR URL, propose an address plan, and then implement it after approval."
