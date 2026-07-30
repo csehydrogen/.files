@@ -1,0 +1,4 @@
+interface:
+  display_name: "GH Self Review"
+  short_description: "Submit a PR, collect reviews, and plan fixes"
+  default_prompt: "Use $gh-self-review to submit my changes, collect Copilot, Codex, and Claude reviews, and prepare a review-address plan."

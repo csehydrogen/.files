@@ -1,4 +1,0 @@
-interface:
-  display_name: "GH Submit and Review PR"
-  short_description: "Submit a PR and request three AI reviews"
-  default_prompt: "Use $gh-submit-and-review-pr to commit and push my current changes, open a PR, and request Copilot, Codex, and Claude reviews."
