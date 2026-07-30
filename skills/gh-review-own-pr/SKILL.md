@@ -1,12 +1,29 @@
 ---
 name: gh-review-own-pr
-description: Prepare and submit the current repository's work as a GitHub pull request, launch GitHub Copilot, Codex, and Claude reviews in parallel, wait for reviews of the exact PR head, present an approval-gated response plan, then implement approved fixes and resolve addressed review threads. Use when the user asks to review their own work, submit current changes for multi-agent review, address feedback on their PR, or invokes gh-review-own-pr.
+description: Orchestrate submission and review of the current repository's work: create or reuse a PR, launch GitHub Copilot plus leaf Codex and Claude reviews, present an approval-gated response plan, and address approved feedback. Use only for a top-level user request to review or submit their own work, address feedback on their PR, or an explicit gh-review-own-pr invocation. Never invoke this skill from a delegated leaf-reviewer prompt.
 ---
 
 # GH Review Own PR
 
 Prepare the current work, obtain three independent reviews as resolvable GitHub
 review comments, and address the feedback only after user approval.
+
+## Orchestrator and leaf-reviewer boundary
+
+This skill is an orchestrator and runs only in the agent handling the user's
+top-level request. The Codex and Claude processes launched in step 3 are
+**leaf reviewers**, even though their prompts contain a PR URL.
+
+Every leaf-reviewer prompt must explicitly say:
+
+- act as a leaf reviewer and perform the review directly;
+- do not invoke or read `gh-review-other-pr`, `gh-review-own-pr`, or any other
+  review-orchestration skill;
+- do not spawn subagents or launch `codex`, `claude`, or another reviewer
+  process;
+- use only the leaf reviewer's own inspection and reasoning.
+
+Do not let a PR URL in a delegated prompt recursively trigger a review skill.
 
 ## Interaction contract
 
@@ -96,6 +113,8 @@ reviewers. This prevents stale feedback from being counted as a new review.
 
 Codex and Claude must independently review exactly `HEAD_SHA` and:
 
+- act as leaf reviewers, review directly, and never invoke review skills,
+  spawn subagents, or launch another Codex or Claude process;
 - review only changed behavior unless surrounding code proves it unsafe;
 - prioritize correctness, concurrency, security, API compatibility, resource
   lifetime, test coverage, and material maintainability issues;
@@ -175,9 +194,12 @@ Start all three review paths before waiting for any one of them:
 
 Run Codex and Claude concurrently rather than waiting for one before starting
 the other. Use the caller's existing security policy; do not add approval or
-sandbox bypass flags. Capture each process's output and exit status separately
-in a temporary directory outside the repository, while printing intermittent
-progress to the user.
+sandbox bypass flags. Create one unique temporary directory with `mktemp -d`
+outside the repository and capture each process's output and exit status in
+separate files there while printing intermittent progress. Retain the directory
+path in the orchestrator's own state; never communicate it through a fixed
+shared pointer file such as `/tmp/current-review-dir`, because concurrent or
+nested processes share `/tmp` and can overwrite it.
 
 ## 4. Wait for completion
 
@@ -193,7 +215,11 @@ Do not treat review submission as review completion.
    ```
 
 3. Use a bounded wait, defaulting to 15 minutes. Check immediately before
-   polling and print progress at short intervals.
+   polling and print rate-limited progress at short intervals. Monitor exact
+   reviewer processes with a blocking, process-aware mechanism such as PID file
+   descriptors with `select`, a process supervisor, or tool-native yielding.
+   Never use `read -t` on non-interactive stdin as a timer: closed stdin
+   returns immediately and creates a busy loop. Never busy-poll.
 4. Re-fetch reviews, comments, and review threads. Confirm:
    - Copilot completed a review of `HEAD_SHA`;
    - Codex and Claude exited successfully;
@@ -202,7 +228,9 @@ Do not treat review submission as review completion.
    - the PR head remains exactly `HEAD_SHA`;
    - the worktree remains clean.
 5. If any reviewer is unavailable, fails, or times out, report its exact state
-   and stop. Proceed with partial results only after explicit user approval.
+   and stop. On timeout, terminate that reviewer and all of its descendants so
+   it cannot post late feedback after being reported incomplete. Proceed with
+   partial results only after explicit user approval.
 
 ## 5. Inspect feedback and propose a plan
 

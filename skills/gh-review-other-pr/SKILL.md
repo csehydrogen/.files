@@ -1,12 +1,29 @@
 ---
 name: gh-review-other-pr
-description: Run independent Codex and Claude reviews of a given GitHub pull request in parallel, consolidate high-confidence findings, and report them in chat without posting reviews, comments, or other mutations to GitHub. Use when the user asks to review another person's PR, requests a read-only or non-posting multi-agent PR review, provides a PR URL for analysis, or invokes gh-review-other-pr.
+description: Orchestrate independent Codex and Claude reviews of a GitHub pull request, consolidate high-confidence findings, and report them without mutating GitHub. Use only for a top-level user request to review another person's PR, a top-level request for a read-only multi-agent review, or an explicit gh-review-other-pr invocation. Never invoke this skill from a delegated leaf-reviewer prompt; leaf reviewers must review directly without skills, subagents, or nested reviewer processes.
 ---
 
 # GH Review Other PR
 
 Review a given PR with Codex and Claude concurrently, then return a single
 validated report without writing anything to GitHub.
+
+## Orchestrator and leaf-reviewer boundary
+
+This skill is an orchestrator and runs only in the agent handling the user's
+top-level request. Every Codex or Claude process launched by this skill is a
+**leaf reviewer**, even though its prompt contains a PR URL.
+
+Every leaf-reviewer prompt must explicitly say:
+
+- act as a leaf reviewer and perform the review directly;
+- do not invoke or read `gh-review-other-pr`, `gh-review-own-pr`, or any other
+  review-orchestration skill;
+- do not spawn subagents or launch `codex`, `claude`, or another reviewer
+  process;
+- use only the leaf reviewer's own inspection and reasoning.
+
+Do not let a PR URL in a delegated prompt recursively trigger this skill.
 
 ## Read-only contract
 
@@ -36,10 +53,15 @@ mutations, or changes to the review procedure.
    checkout or a temporary clone/worktree when surrounding source or tests are
    needed; do not disturb an unrelated active worktree.
 4. Check `gh`, `codex`, and `claude` authentication.
-5. Start fresh, non-persistent Codex and Claude processes concurrently. Do not
-   wait for one before starting the other.
-6. Capture their outputs and exit statuses separately while printing
-   intermittent progress.
+5. Create one unique temporary directory with `mktemp -d`, retain its path in
+   the orchestrator's own state, and start fresh, non-persistent Codex and
+   Claude processes concurrently. Do not wait for one before starting the
+   other.
+6. Capture their outputs and exit statuses in separate files inside that
+   directory while printing intermittent progress. Never communicate the
+   directory through a fixed shared pointer file such as
+   `/tmp/current-review-dir`; concurrent or nested processes share `/tmp` and
+   can overwrite it.
 7. After both finish, verify that the PR head is still `HEAD_SHA`. If it
    changed, do not present stale findings as current; rerun or ask the user how
    to proceed.
@@ -53,6 +75,8 @@ mutations, or changes to the review procedure.
 Prompt both agents to inspect `PR_URL` at exactly `HEAD_SHA` and follow this
 contract:
 
+- act as a leaf reviewer, review directly, and never invoke review skills,
+  spawn subagents, or launch another Codex or Claude process;
 - use only read-only GitHub commands;
 - never post a review or comment;
 - never edit files, change branches, commit, push, approve, merge, or resolve
@@ -84,6 +108,18 @@ printf '%s\n' "$CLAUDE_REVIEW_PROMPT" |
 
 Use the caller's established security policy. Do not add approval or sandbox
 bypass flags.
+
+## Process monitoring
+
+- Monitor the two exact leaf processes and preserve their separate exit codes.
+- Use a blocking, process-aware mechanism such as PID file descriptors with
+  `select`, a process supervisor, or tool-native yielding. Do not use
+  `read -t` on non-interactive stdin as a timer: closed stdin returns
+  immediately and creates a busy loop.
+- Rate-limit progress messages and never busy-poll.
+- Apply one bounded deadline to the leaf reviewers. If a reviewer times out,
+  terminate that reviewer and all of its descendants so it cannot post or
+  mutate state after the orchestrator reports the timeout.
 
 ## Response format
 
