@@ -214,7 +214,7 @@ Do not treat review submission as review completion.
    gh api "/repos/$OWNER/$REPO/pulls/$PR/reviews" --paginate
    ```
 
-3. Use a bounded wait, defaulting to 15 minutes. Check immediately before
+3. Use a bounded wait, defaulting to 30 minutes. Check immediately before
    polling and print rate-limited progress at short intervals. Monitor exact
    reviewer processes with a blocking, process-aware mechanism such as PID file
    descriptors with `select`, a process supervisor, or tool-native yielding.
