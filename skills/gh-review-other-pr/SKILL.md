@@ -49,9 +49,13 @@ mutations, or changes to the review procedure.
    gh pr diff "$PR_URL" --patch
    ```
 
-3. Record `HEAD_SHA` and review exactly that revision. Use an existing matching
-   checkout or a temporary clone/worktree when surrounding source or tests are
-   needed; do not disturb an unrelated active worktree.
+3. Record `HEAD_SHA` and review exactly that revision. Inspect surrounding
+   source or tests in the target repository's primary checkout. Never create
+   or use a Git worktree unless the user explicitly requests one. If the
+   primary checkout has existing changes, preserve them by stashing them or by
+   committing and pushing them to an appropriate branch, then continue in that
+   same checkout. If no local checkout exists, create a normal clone to serve
+   as the primary checkout rather than a linked worktree.
 4. Check `gh`, `codex`, and `claude` authentication.
 5. Create one unique temporary directory with `mktemp -d`, retain its path in
    the orchestrator's own state, and start fresh, non-persistent Codex and

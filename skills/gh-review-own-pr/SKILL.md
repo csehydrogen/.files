@@ -1,6 +1,6 @@
 ---
 name: gh-review-own-pr
-description: Orchestrate submission and review of the current repository's work: create or reuse a PR, launch GitHub Copilot plus leaf Codex and Claude reviews, present an approval-gated response plan, and address approved feedback. Use only for a top-level user request to review or submit their own work, address feedback on their PR, or an explicit gh-review-own-pr invocation. Never invoke this skill from a delegated leaf-reviewer prompt.
+description: "Orchestrate submission and review of the current repository's work: create or reuse a PR, launch GitHub Copilot plus leaf Codex and Claude reviews, present an approval-gated response plan, and address approved feedback. Use only for a top-level user request to review or submit their own work, address feedback on their PR, or an explicit gh-review-own-pr invocation. Never invoke this skill from a delegated leaf-reviewer prompt."
 ---
 
 # GH Review Own PR
@@ -62,6 +62,11 @@ Do not merge the PR.
    proceeding if the intended change set or base branch is ambiguous.
 5. Never commit secrets or unrelated files. Never force-push unless the user
    explicitly approves it and repository rules allow it.
+6. Use the repository's primary checkout. Never create or use a Git worktree
+   unless the user explicitly requests one. Handle intended local changes in
+   step 1. Preserve any unrelated existing changes by stashing them or by
+   committing and pushing them to an appropriate branch, then continue in the
+   same checkout.
 
 ## 1. Prepare and push the branch
 
@@ -226,7 +231,7 @@ Do not treat review submission as review completion.
    - new Codex and Claude findings carry their required prefixes and are
      attached as resolvable inline threads;
    - the PR head remains exactly `HEAD_SHA`;
-   - the worktree remains clean.
+   - the primary working directory remains clean.
 5. If any reviewer is unavailable, fails, or times out, report its exact state
    and stop. On timeout, terminate that reviewer and all of its descendants so
    it cannot post late feedback after being reported incomplete. Proceed with

@@ -46,6 +46,20 @@ Exception: for agent-instruction updates in the `~/.files` dotfiles repo, commit
 
 When creating a feature branch, use the `heehoon/` prefix by default unless the user explicitly requests a different branch name.
 
+### Primary checkout only
+
+Never create or use a Git linked worktree (`git worktree`) unless the user
+explicitly requests one. Work in the repository's primary checkout instead.
+
+If the primary checkout is dirty, do not create a worktree to avoid it.
+Preserve the existing changes first: either stash them (including relevant
+untracked files) or commit and push them to an appropriate branch, following
+the repository's Git rules. Never discard or overwrite existing work. Then
+continue in the same primary checkout. If the dirty changes are the task's
+intended input, handle them there rather than stashing them away. Restore
+stashed changes when the task is complete and it is safe to do so; report any
+restoration conflict.
+
 ## Device Locking
 
 Only use the lock when you are working with https://github.com/moreh-dev/tt-metal and the hostname is supported by `moreh-lock` (for example, the Moreh Galaxy hosts configured in `tools/moreh_lock`).
@@ -127,10 +141,10 @@ Always use `./build_metal.sh -ce` to compile tt-metal. Never use cmake directly,
 
 ### Environment variables
 
-Before building, testing, importing, or running tt-metal, set the environment for the exact tt-metal checkout being used. Be especially careful with worktrees: `TT_METAL_HOME` must point to the active tt-metal worktree, not another checkout. Set all of the following:
+Before building, testing, importing, or running tt-metal, set the environment for the exact tt-metal checkout being used. If the user explicitly requested a worktree, `TT_METAL_HOME` must point to that active tt-metal worktree, not another checkout. Set all of the following:
 
 ```bash
-export TT_METAL_HOME="<absolute path to the tt-metal checkout or worktree in use>"
+export TT_METAL_HOME="<absolute path to the active tt-metal checkout>"
 export TT_METAL_RUNTIME_ROOT="${TT_METAL_HOME}"
 export PYTHONPATH="${TT_METAL_HOME}:${TT_METAL_HOME}/ttnn:${TT_METAL_HOME}/tools"
 ```
