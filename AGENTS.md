@@ -14,6 +14,16 @@ Never use Korean unless the user explicitly requests it.
 
 When interacting with services such as Slack, GitHub, and similar platforms, prefer command-line tools, direct APIs, or another programmatic approach over installing or requesting a plugin. Use a plugin only when those approaches are unavailable or clearly inadequate.
 
+### Claude authentication
+
+Claude's OAuth token is stored at `$HOME/.claude/oauth-token`. Before invoking Claude from a subprocess or reviewer workflow, export it as `CLAUDE_CODE_OAUTH_TOKEN`:
+
+```bash
+export CLAUDE_CODE_OAUTH_TOKEN="$(<"$HOME/.claude/oauth-token")"
+```
+
+Never print or commit the token.
+
 ## Execution location
 
 Unless the user explicitly requests remote execution, run builds, tests, benchmarks, experiments, and other jobs on the host and cluster where the session is already running. Do not use SSH or another remote connection to move a job elsewhere. For example, from `ttdev31`, run the job on `ttdev31`, not `ttdev32`; from AI cluster 1, stay on AI cluster 1 rather than using AI cluster 2.
