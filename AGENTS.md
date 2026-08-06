@@ -201,7 +201,9 @@ The `op_breakdown` test and its L1 debug tensor interface are optional; implemen
 ### Circular buffers
 
 - Never call `cb_push_back` or `cb_pop_front` from multiple threads. CB write/read pointers are not synchronized across threads (see the comment in `cb_api.h`).
-- A single `cb_reserve_back`, `cb_push_back`, `cb_wait_front`, or `cb_pop_front` call must not cross the physical CB boundary. Limit each call to the contiguous pages remaining before the wrap point, let the pointer reach the boundary and wrap, then issue another call for any remaining pages. For example, at offset 2 in a 3-page CB, call with 1, not 2.
+- `cb_reserve_back` and `cb_wait_front` are counter-only blocking waits; they do not advance CB pointers or record a physical span. Their requested page count may logically cross the CB wrap boundary, up to the CB's total capacity. Repeated `cb_wait_front` calls without a paired pop use cumulative counts.
+- `cb_push_back` and `cb_pop_front` advance the physical write/read pointers. A single call may reach the physical CB limit exactly and wrap, but must not advance past it. Split pointer-advancing operations at the boundary, and ensure push/pop amounts over one complete cycle sum exactly to the CB size.
+- A cross-boundary reserve/wait proves only free/available page credit; it does not make the underlying pages physically contiguous. Split actual memory accesses and their corresponding push/pop operations into boundary-safe chunks.
 
 ### Accessing tensors
 
