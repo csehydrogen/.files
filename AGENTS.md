@@ -163,6 +163,7 @@ These rules are intentionally stricter than necessary to reduce mistakes by AI a
 
 ### General kernel rules
 
+- When writing or modifying TT data movement kernels, always use the Device 2.0 APIs from `tt_metal/hw/inc/api/` rather than legacy data movement APIs. Follow the [Device 2.0 Data Movement API Migration Guide](https://github.com/tenstorrent/tt-metal/blob/main/docs/source/tt-metalium/tt_metal/apis/kernel_apis/data_movement/device_api_migration_guide.md). Any legacy API names elsewhere in these instructions express required behavior only; use their Device 2.0 equivalents in code.
 - Never use `invalidate_l1_cache()`.
 - Any kernel that issues asynchronous NoC atomics, including semaphore increments, must call `noc_async_atomic_barrier()` after those operations and before the kernel ends.
 - Any kernel that issues asynchronous NoC writes must call `noc_async_write_barrier()` after those operations and before the kernel ends.
