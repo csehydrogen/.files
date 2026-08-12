@@ -64,6 +64,14 @@ restoration conflict.
 
 Only use the lock when you are working with https://github.com/moreh-dev/tt-metal and the hostname is supported by `moreh-lock` (for example, the Moreh Galaxy hosts configured in `tools/moreh_lock`).
 
+Before invoking `moreh-lock` or any tt-metal build, test, import, or workload command, always activate the virtual environment created by the active tt-metal checkout's `create_venv.sh`:
+
+```bash
+source "<absolute path to the active tt-metal checkout>/python_env/bin/activate"
+```
+
+If that environment does not exist, create it with `./create_venv.sh` first, then activate it. Always use the environment from the active checkout; it provides repository tools such as `moreh-lock` and prevents command-not-found errors.
+
 Exception: `vllm-tt-moreh` test scripts acquire and release the device lock internally. When running those test scripts, do not acquire `moreh-lock` manually outside the script.
 
 Never use a tray-scoped device lock or tray-scoped device reset, and never run a TT workload scoped to one tray. Do not use `moreh-lock run --tray`, `moreh-smi -glx_reset_tray`, or `moreh-smi -glx_tray_env`, and do not restrict `TT_VISIBLE_DEVICES` to a tray. On Galaxy hosts, use a whole-host lock and a whole-Galaxy reset, with device visibility not scoped by tray.
