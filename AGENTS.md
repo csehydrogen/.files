@@ -62,19 +62,19 @@ restoration conflict.
 
 ## Device Locking
 
-Only use the lock when you are working with https://github.com/moreh-dev/tt-metal and the hostname is supported by `moreh-lock` (for example, the Moreh Galaxy hosts configured in `tools/moreh_lock`).
+Only use the lock when you are working with https://github.com/moreh-dev/tt-metal and the current host is registered with `moreh-lock`. Run `moreh-lock status` to confirm registration; it reports the node and its current holder.
 
-Before invoking `moreh-lock` or any tt-metal build, test, import, or workload command, always activate the virtual environment created by the active tt-metal checkout's `create_venv.sh`:
+`moreh-lock` is a system installation at `/usr/local/bin/moreh-lock`, independent of any tt-metal checkout. Never vendor, install, or invoke a checkout-local copy. tt-metal removed its bundled `tools/moreh_lock`, so a `moreh-lock` inside a checkout virtual environment is a stale console script that shadows the system binary and fails with `ModuleNotFoundError: No module named 'moreh_lock'`. Delete such a shim rather than working around it. The system wrapper runs Python with `-I`, so a tt-metal `PYTHONPATH` cannot shadow the package once the shim is gone.
+
+Separately, activate the active checkout's virtual environment for tt-metal build, test, import, and workload commands, so they resolve dependencies from that checkout rather than another one:
 
 ```bash
 source "<absolute path to the active tt-metal checkout>/python_env/bin/activate"
 ```
 
-If that environment does not exist, create it with `./create_venv.sh` first, then activate it. Always use the environment from the active checkout; it provides repository tools such as `moreh-lock` and prevents command-not-found errors.
+If that environment does not exist, create it with `./create_venv.sh` first, then activate it. `create_venv.sh` defaults to `./python_env`, but a checkout may use a different directory such as `.venv`; activate the one that checkout actually has. Activating a virtual environment never replaces the system `moreh-lock`.
 
 Exception: `vllm-tt-moreh` test scripts acquire and release the device lock internally. When running those test scripts, do not acquire `moreh-lock` manually outside the script.
-
-Never use a tray-scoped device lock or tray-scoped device reset, and never run a TT workload scoped to one tray. Do not use `moreh-lock run --tray`, `moreh-smi -glx_reset_tray`, or `moreh-smi -glx_tray_env`, and do not restrict `TT_VISIBLE_DEVICES` to a tray. On Galaxy hosts, use a whole-host lock and a whole-Galaxy reset, with device visibility not scoped by tray.
 
 ### Lock command to use
 
@@ -96,6 +96,8 @@ Prefer the CLI wrapper for device commands:
 moreh-lock run --wait-timeout 3600 --max-hold <seconds> -m "<what you are doing and expected duration>" -- <command> <args>
 ```
 
+The lock is node-wide. Reservations are node-exclusive, so two jobs never share a node, and `TT_VISIBLE_DEVICES` selects only which devices the workload uses; it never narrows the lock. To lock several hosts for one job, name every host with `--nodes host1,host2`.
+
 If the command needs shell features, wrap it with `bash -lc`:
 
 ```bash
@@ -114,10 +116,13 @@ After a locked command exits, verify the lock was released:
 moreh-lock status
 ```
 
-Expected final output:
+Expected final output reports the node with no holder:
 
 ```text
-Lock is free (... lock files)
+NODE	<host>
+STATE	FREE
+USER	-
+JOB	-
 ```
 
 Do not run device commands outside `moreh-lock run` unless a higher-level tool already acquires the lock for you. Do not manually kill another user's lock process.
