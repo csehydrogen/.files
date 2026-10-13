@@ -1,53 +1,22 @@
 ---
 name: agent-update
-description: Update or synchronize shared agent instruction files in the user's ~/.files dotfiles repo. Use when the user invokes /agent-update, asks to edit AGENTS.md/CLAUDE.md/Codex or Claude agent files, wants to commit and push agent-file changes, wants to pull updated agent files from another machine, or asks the current AI agent to re-read updated agent instructions.
+description: Audit, edit, sync, or re-read shared agent instructions and skills in $HOME/.files. Use for /agent-update or requests about these shared files, not ordinary project-local instructions.
 ---
 
 # Agent Update
 
-Manage shared agent instructions from `~/.files` without helper scripts. Do the git/file work directly as the current agent.
+## Source of truth
 
-## Locations
+- Repository: `$HOME/.files`; shared instructions: `AGENTS.md`; skills: `skills/`.
+- Repository entry points `.codex/AGENTS.md` and `.claude/CLAUDE.md` link to `../AGENTS.md`; `.codex/skills` and `.claude/skills` link to `../skills`.
+- Inspect installed links separately. Do not replace real skill directories or remove bundled `.system` skills to enforce a layout; installation changes need their own scope.
 
-- Dotfiles repo: `~/.files` (or `/mnt/nvme0/heehoon/.files` on Moreh servers)
-- Shared instruction file: `~/.files/AGENTS.md`
-- Codex instruction symlink: `~/.files/.codex/AGENTS.md -> ../AGENTS.md`
-- Claude instruction symlink: `~/.files/.claude/CLAUDE.md -> ../AGENTS.md`
-- Shared skills directory: `~/.files/skills`
-- Codex/Claude skill symlinks: `~/.files/.codex/skills -> ../skills`, `~/.files/.claude/skills -> ../skills`
+## Choose the requested mode
 
-## `/agent-update <request>` workflow
+- **Audit or re-read:** inspect and report without editing, pulling, committing, or pushing unless requested. Validate volatile claims against installed tools, source code, or current primary documentation; distinguish obsolete guidance from unverified guidance. Do not infer skill usage from age.
+- **Sync** (including `/agent-update` without arguments): inspect status, record HEAD, then run `git pull --ff-only` if safe. Read instruction files changed since the recorded HEAD and report what changed.
+- **Edit:** inspect `git status --short --branch`, preserve unrelated work, and edit only the requested shared files. Keep triggers narrow, avoid duplication, and re-read/validate the result. Do not run the dotfiles installer as part of a text update.
 
-When the user provides update text:
+For sync or edits, use `master` and pull before editing when safe; never switch branches or pull over conflicting local work. A local-only request leaves edits uncommitted and unpushed. Otherwise, agent-file updates follow the repository's direct-to-`master` workflow: review the diff, stage only task files, commit without co-authors, and push to `origin/master` (no feature branch or PR).
 
-1. Work in `~/.files`; inspect `git status --short --branch` first.
-2. Switch to `master` and pull before editing if local changes make that safe: `git pull --ff-only`.
-3. Edit the shared agent file or shared skill files requested by the user.
-4. Re-read the changed instruction files and ensure the new instructions are clear, scoped, and not duplicated.
-5. Review `git diff`; stage only relevant files. Do not include unrelated local config changes unless explicitly requested.
-6. Commit with a concise message, then push directly to `origin/master`. Do not create a feature branch or pull request for `~/.files` agent updates.
-7. Re-read the updated agent file in the current session and follow it where it does not conflict with higher-priority instructions.
-8. Summarize changed files, commit hash, and push result.
-
-## `/agent-update` workflow
-
-When the user gives no update text:
-
-1. Work in `~/.files`; inspect `git status --short --branch`.
-2. Run `git pull --ff-only` if local changes do not make that unsafe.
-3. Determine whether `AGENTS.md` or files under `skills/` changed.
-4. If changed, read the changed instruction/skill files and apply them for the rest of the session where they do not conflict with higher-priority instructions.
-5. Report whether anything changed and what was re-read.
-
-## Session-start refresh
-
-If `AGENTS.md` instructs a new session to refresh dotfiles, perform a best-effort `git -C ~/.files pull --ff-only` at the start of the first user task, unless it would overwrite local work. If agent files changed, read them before continuing.
-
-## Guardrails
-
-- Do not create `agent_update.py` or another helper unless the user explicitly asks.
-- Prefer direct agent edits and git commands.
-- Never commit secrets, credentials, histories, caches, or unrelated local settings.
-- Preserve symlinks for Codex/Claude entry points.
-- For `~/.files`, push agent updates directly to `master`; never open a pull request.
-- Use normal prose for commits and PR-style summaries, even if another communication-mode skill is active.
+Never stage credentials, caches, or histories. Do not include unrelated settings or pre-existing user work without authorization. Apply re-read instructions only where they do not conflict with higher-priority instructions. Report changed files, validation, and whether changes are local or committed/pushed; use normal prose for commit messages.

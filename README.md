@@ -8,7 +8,7 @@ git clone --depth=1 https://github.com/csehydrogen/.files.git
 source .files/install.sh
 ```
 
-This will overwrite local files, so be careful!
+This updates existing symlinks but refuses to replace real files or directories. Resolve reported collisions manually before retrying; no links are changed if preflight fails.
 
 ## Settings
 

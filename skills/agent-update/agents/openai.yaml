@@ -1,4 +1,4 @@
 interface:
   display_name: "Agent Update"
-  short_description: "Update shared agent instructions and sync dotfiles."
-  default_prompt: "Update my shared agent files, commit and push dotfiles, or pull and re-read them."
+  short_description: "Audit, update, or sync shared agent instructions."
+  default_prompt: "Use $agent-update to audit my shared agent instructions and recommend improvements without changing files."
