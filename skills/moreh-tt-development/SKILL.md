@@ -28,6 +28,10 @@ Activate the checkout's actual venv if it uses a different directory, such as `.
 
 Our build policy is `./build_metal.sh -ce`: `-c` enables ccache and `-e` exports compile commands and disables unity. Never invoke CMake directly or use unity builds. After changing tt-metal source, complete this build before tests or device workloads, even if the changes appear JIT-only.
 
+## TTNN tensor lifetime
+
+In Python TTNN code, use `del x` rather than `ttnn.deallocate(x)` when releasing a tensor that is no longer needed.
+
 ## Device locking
 
 On a Moreh Guardian-protected host, every TT workload must run in an authorized job cgroup, regardless of its repository. The local Guardian coordinates whole-node reservations and attaches the child before execution. On other hosts, follow the applicable device policy; do not invent/install a Moreh service. If an expected shared host cannot be verified, stop device use rather than bypassing protection.
