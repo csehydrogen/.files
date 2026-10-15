@@ -8,16 +8,21 @@ description: "Submit the user's work for Copilot, Codex, and Claude review, or p
 ## Select the requested workflow
 
 - **Submit/publish current work:** prepare the branch and create/reuse its PR,
-  then run the full three-reviewer workflow below.
+  then run the reviewer workflow below.
 - **Address existing feedback:** go directly to the response plan. Do not
   resubmit work or request fresh reviews unless requested.
 - **Inspect/review my PR:** this alone does not authorize commits, pushes,
   public comments, or reviewer requests. If publication intent is unclear,
   ask before starting the full workflow; keep inspection read-only meanwhile.
 
-The full workflow uses **Copilot + Codex + Claude**. Do not silently replace or
-omit a reviewer. Never merge. Approvals, review dismissal, and force-pushes
-require separate explicit authorization.
+The full workflow normally uses **Copilot + Codex + Claude**. If the user reports
+or GitHub explicitly indicates that Copilot quota is exhausted, skip Copilot for
+that run and continue with Codex + Claude without additional approval. Report
+Copilot as **skipped: quota exhausted**, not completed; do not retry or wait for
+it in that run. Do not infer quota exhaustion from silence, timeouts, generic
+rate limits, or authentication/access errors.
+Otherwise, do not silently replace or omit a reviewer. Never merge. Approvals,
+review dismissal, and force-pushes require separate explicit authorization.
 
 ## Scope and preparation
 
@@ -83,9 +88,10 @@ operations are denied or cannot obtain approval, report that reviewer blocked.
 
 Create one unique `mktemp -d` directory outside the repository for separate
 outputs and exit statuses; retain its path directly, never via a shared pointer
-file. Start all three paths before waiting for any one of them:
+file. Start all non-skipped reviewer paths before waiting for any one of them:
 
 ```bash
+# Skip this request when Copilot quota is known to be exhausted.
 gh pr edit "$PR_URL" --add-reviewer "@copilot"
 printf '%s\n' "$CODEX_REVIEW_PROMPT" | codex exec --ephemeral --json -C "$REPO_ROOT" -
 printf '%s\n' "$CLAUDE_REVIEW_PROMPT" | claude --print --no-session-persistence
@@ -93,8 +99,8 @@ printf '%s\n' "$CLAUDE_REVIEW_PROMPT" | claude --print --no-session-persistence
 
 These are individual launch commands: supervise the two CLI commands
 **concurrently**, with the token exported in Claude's launch environment, not
-as a sequential script. Copilot must run as the GitHub PR reviewer, not a CLI
-substitute. Prefer a batched inline review for CLI findings:
+as a sequential script. When not skipped, Copilot must run as the GitHub PR
+reviewer, not a CLI substitute. Prefer a batched inline review for CLI findings:
 
 ```bash
 gh api --method POST "/repos/$OWNER/$REPO/pulls/$PR/reviews" --input review.json
@@ -113,14 +119,17 @@ Use `LEFT` for removed/base-side lines; use the matching reviewer prefix.
 - Apply one **30-minute deadline**. Use process-aware/tool-native waits, report
   intermittent progress, and preserve each exit code and final summary. Do not
   busy-poll or use `read -t` on closed/non-interactive stdin as a timer.
-- Poll paginated PR reviews for a new Copilot-authored completed review of
-  `HEAD_SHA`, excluding baseline IDs. Request submission is not completion.
+- Unless Copilot was skipped, poll paginated PR reviews for a new Copilot-authored
+  completed review of `HEAD_SHA`, excluding baseline IDs. Request submission is
+  not completion. If quota exhaustion is reported during the run, apply the skip
+  rule above and stop polling Copilot.
 - Require successful CLI exits, captured summaries, and valid new inline threads
   for any posted CLI findings. Recheck PR head and local status for unexpected
   changes. If the head moved, do not present stale findings as current.
-- On failure, timeout, or blocked access, account for every started reviewer
-  before returning. Stop remaining local reviewer process trees if abandoning
-  the run, and capture final states; do not leave children posting late feedback.
+- On failure, timeout, or blocked access (except the Copilot quota skip), account
+  for every started reviewer before returning. Stop remaining local reviewer
+  process trees if abandoning the run, and capture final states; do not leave
+  children posting late feedback.
   Remote Copilot is not a local child: report pending/unknown state honestly.
   Stop before fixes; proceed with partial results only with explicit approval.
 
